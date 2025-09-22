@@ -1,0 +1,37 @@
+[
+  {
+    "id": "registrar_registration_deadlines",
+    "title": "Registrar Office – Registration Deadlines",
+    "url": "https://university.example.edu/registrar/registration-deadlines",
+    "content": "The Registrar's Office maintains the official academic calendar. Registration for fall and spring terms closes at 11:59 p.m. on the published deadline date. Students who miss the deadline must submit an add/drop form with advisor approval. The calendar also lists late registration penalties and appeal instructions.",
+    "tags": ["registration", "deadlines", "add drop"]
+  },
+  {
+    "id": "registrar_transcript_portal",
+    "title": "Registrar – Ordering Official Transcripts",
+    "url": "https://university.example.edu/registrar/transcripts",
+    "content": "Official transcript orders are submitted through the secure transcript portal. Students authenticate with their university credentials, choose electronic or paper delivery, and pay a $10 fee per copy. Processing takes one to two business days. Unofficial copies are available instantly in the academic records tile.",
+    "tags": ["transcript", "records"]
+  },
+  {
+    "id": "advising_appointments",
+    "title": "Academic Advising – Appointment Scheduling",
+    "url": "https://university.example.edu/advising/appointments",
+    "content": "Advising appointments are scheduled through the Navigate Student app. Standard meetings last 30 minutes, and students may choose in-person or Zoom formats. The site includes directions for requesting accommodations and instructions for adding topics to the appointment notes so advisors can prepare.",
+    "tags": ["advising", "appointments"]
+  },
+  {
+    "id": "records_course_withdrawal",
+    "title": "Records Office – Course Withdrawal",
+    "url": "https://university.example.edu/records/course-withdrawal",
+    "content": "To withdraw after the add/drop window, students download the Course Withdrawal form, gather instructor and advisor signatures, and submit the completed packet to Records before the posted deadline. The page explains how W grades appear on transcripts and outlines potential impacts to financial aid and international student status.",
+    "tags": ["withdrawal", "records"]
+  },
+  {
+    "id": "financial_aid_overview",
+    "title": "Financial Aid – Understanding Your Award",
+    "url": "https://university.example.edu/financial-aid/status",
+    "content": "The financial aid status page walks students through reviewing outstanding checklist items, accepting loans, and verifying disbursement dates. Contact options include calling the office at (555) 123-4567 or emailing finaid@university.edu for personalized guidance.",
+    "tags": ["financial aid", "billing"]
+  }
+]

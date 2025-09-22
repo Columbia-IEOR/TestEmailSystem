@@ -1,0 +1,106 @@
+[
+  {
+    "id": "registration_deadline",
+    "subject": "Course Registration Deadline Guidance",
+    "categories": [
+      "registration",
+      "deadlines"
+    ],
+    "utterances": [
+      "When is the deadline to register for classes?",
+      "How late can I add a course?",
+      "registration window closing",
+      "last day to enroll",
+      "add drop deadline",
+      "register for fall classes"
+    ],
+    "response_template": "Hello {student_name},\n\nThanks for reaching out! The registration period for {term} closes on {registration_deadline}. You can continue to add classes until 11:59 p.m. on that date through the student portal. If you need to make changes afterward, please submit an Add/Drop form and obtain approval from your academic advisor.\n\nHere are a few tips to stay on track:\n\u2022 Double-check your degree audit to ensure the courses fit your academic plan.\n\u2022 Resolve any holds before the deadline so you do not lose access.\n\u2022 If you run into registration errors, send us a screenshot and we will be glad to help.\n\nLet us know if you have additional questions!\n\nBest regards,\nAcademic Advising Team",
+    "follow_up_questions": [
+      "Are you planning to take the course for credit or audit?",
+      "Do you have any registration holds on your account?"
+    ]
+  },
+  {
+    "id": "transcript_request",
+    "subject": "Official Transcript Request Instructions",
+    "categories": [
+      "records",
+      "transcript"
+    ],
+    "utterances": [
+      "How do I order my transcript?",
+      "I need an official transcript",
+      "send transcript to employer",
+      "transcript processing time",
+      "where to request transcript"
+    ],
+    "response_template": "Hello {student_name},\n\nYou can request an official transcript any time through the Registrar's transcript portal. Log in with your student credentials, select \"Request Official Transcript,\" and follow the prompts to choose an electronic or paper delivery. Processing typically takes 1-2 business days. There is a $10 processing fee for each official copy.\n\nIf you need an unofficial transcript, you can download one instantly from the student portal under \"Academic Records.\"\n\nPlease let us know if you require expedited mailing or if a third-party form must accompany the transcript and we will be happy to help.\n\nWarm regards,\nAcademic Advising Team",
+    "follow_up_questions": [
+      "Do you need the transcript sent electronically or via mail?",
+      "Is there a specific deadline you need to meet?"
+    ]
+  },
+  {
+    "id": "appointment_scheduling",
+    "subject": "Academic Advising Appointment Options",
+    "categories": [
+      "appointments",
+      "advising"
+    ],
+    "utterances": [
+      "schedule advising appointment",
+      "meet with advisor",
+      "book appointment",
+      "find a time to talk to advisor",
+      "how to schedule meeting"
+    ],
+    "response_template": "Hello {student_name},\n\nWe would be glad to meet with you! Advising appointments can be scheduled online through the Navigate Student app or by visiting the advising portal on the university website. You will see available 30-minute meeting times for your assigned advisor over the next two weeks.\n\nIf you do not see a time that works for you, reply with a few windows of availability and we will follow up with alternatives. Virtual meetings via Zoom are also available upon request.\n\nTalk soon,\nAcademic Advising Team",
+    "follow_up_questions": [
+      "Is there a specific topic you would like to discuss during the appointment?",
+      "Do you prefer an in-person or virtual meeting?"
+    ]
+  },
+  {
+    "id": "course_withdrawal",
+    "subject": "Course Withdrawal Process",
+    "categories": [
+      "withdrawal",
+      "registration"
+    ],
+    "utterances": [
+      "How do I drop a class after the deadline?",
+      "I might need to withdraw from a course",
+      "drop class with W",
+      "late withdrawal options",
+      "need help with course withdrawal paperwork",
+      "withdraw from a course due to personal reasons",
+      "withdraw from course",
+      "withdrawal paperwork"
+    ],
+    "response_template": "Hello {student_name},\n\nTo withdraw from a course after the add/drop period, please submit the Course Withdrawal form located in the Records and Registration section of the student portal. The form requires signatures from both you and the course instructor. Once approved, the Registrar will record a grade of 'W'.\n\nKey reminders:\n\u2022 The withdrawal deadline for {term} is {withdrawal_deadline}.\n\u2022 Withdrawing may impact your financial aid or progress toward graduation.\n\u2022 International students should consult with the Office of Global Engagement before submitting the form.\n\nPlease let us know if you would like to talk through the decision or explore alternative options.\n\nSincerely,\nAcademic Advising Team",
+    "follow_up_questions": [
+      "Have you spoken with your course instructor about the withdrawal?",
+      "Would you like to review how this might impact your financial aid?"
+    ]
+  },
+  {
+    "id": "financial_aid_status",
+    "subject": "Checking Your Financial Aid Status",
+    "categories": [
+      "financial aid",
+      "billing"
+    ],
+    "utterances": [
+      "status of my financial aid",
+      "financial aid not showing",
+      "where is my scholarship",
+      "aid disbursement date",
+      "financial aid office contact"
+    ],
+    "response_template": "Hello {student_name},\n\nYou can monitor the status of your financial aid package by logging into the Financial Aid tile in the student portal. From there, review the 'To-Do List' to confirm that all documents have been submitted. Aid typically disburses to your student account starting one week before classes begin, provided all requirements are complete.\n\nIf something still looks missing, the Financial Aid Office can be reached at {financial_aid_phone} or {financial_aid_email}. Please have your student ID number handy when you call.\n\nLet us know if we can review anything together!\n\nBest,\nAcademic Advising Team",
+    "follow_up_questions": [
+      "Have you completed all outstanding financial aid tasks in the portal?",
+      "Are you expecting new scholarships or loans this term?"
+    ]
+  }
+]
