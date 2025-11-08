@@ -21,26 +21,6 @@
     ]
   },
   {
-    "id": "transcript_request",
-    "subject": "Official Transcript Request Instructions",
-    "categories": [
-      "records",
-      "transcript"
-    ],
-    "utterances": [
-      "How do I order my transcript?",
-      "I need an official transcript",
-      "send transcript to employer",
-      "transcript processing time",
-      "where to request transcript"
-    ],
-    "response_template": "Hello {student_name},\n\nYou can request an official transcript any time through the Registrar's transcript portal. Log in with your student credentials, select \"Request Official Transcript,\" and follow the prompts to choose an electronic or paper delivery. Processing typically takes 1-2 business days. There is a $10 processing fee for each official copy.\n\nIf you need an unofficial transcript, you can download one instantly from the student portal under \"Academic Records.\"\n\nPlease let us know if you require expedited mailing or if a third-party form must accompany the transcript and we will be happy to help.\n\nWarm regards,\nAcademic Advising Team",
-    "follow_up_questions": [
-      "Do you need the transcript sent electronically or via mail?",
-      "Is there a specific deadline you need to meet?"
-    ]
-  },
-  {
     "id": "appointment_scheduling",
     "subject": "Academic Advising Appointment Options",
     "categories": [
@@ -83,24 +63,362 @@
       "Would you like to review how this might impact your financial aid?"
     ]
   },
-  {
-    "id": "financial_aid_status",
-    "subject": "Checking Your Financial Aid Status",
+  { 
+    "id": "change_major",
+    "subject": "Guidance on Changing Majors",
     "categories": [
-      "financial aid",
-      "billing"
+      "majors",
+      "deadlines"
     ],
     "utterances": [
-      "status of my financial aid",
-      "financial aid not showing",
-      "where is my scholarship",
-      "aid disbursement date",
-      "financial aid office contact"
+      "I want to switch majors",
+      "How can I change my major?",
+      "Where can I find the major change form?",
+      "Have I fulfilled enough requirements to switch majors?",
+      "What’s the process to switch my program?",
+      "I want to add a second major",
+      "I’d like to switch to an IEOR major",
+      "How can I declare my major?"
     ],
-    "response_template": "Hello {student_name},\n\nYou can monitor the status of your financial aid package by logging into the Financial Aid tile in the student portal. From there, review the 'To-Do List' to confirm that all documents have been submitted. Aid typically disburses to your student account starting one week before classes begin, provided all requirements are complete.\n\nIf something still looks missing, the Financial Aid Office can be reached at {financial_aid_phone} or {financial_aid_email}. Please have your student ID number handy when you call.\n\nLet us know if we can review anything together!\n\nBest,\nAcademic Advising Team",
+    "response_template": "Hello {student_name},\n\nThanks for reaching out! To change or declare a major, you will first need to obtain permission by an advisor in your new department. Afterward, you will need to complete the Major/Minor Declaration/Change form, available here: {major_minor_declaration_form}. The form must be submitted to Kelly Katsigiris, the Academic & Student Affairs for IEOR undergraduate students. She will read and sign the form, and then she will send it to your CSA advisor. Before you submit the form, we highly recommend you review the program requirements in the Columbia Engineering Bulletin to ensure it’s a good fit, and check to see if any of the courses you’ve taken count towards the new major. We would be happy to meet to discuss this decision and help you create an updated academic plan. Let us know what you decide! Best regards, Academic Advising Team",
     "follow_up_questions": [
-      "Have you completed all outstanding financial aid tasks in the portal?",
-      "Are you expecting new scholarships or loans this term?"
+      "Have you checked if the classes you’ve taken count towards your new major?"
+    ]
+  },
+  { 
+    "id": "change_minor",
+    "subject": "Guidance on Changing or Declaring Minors",
+    "categories": [
+      "minors",
+      "deadlines"
+    ],
+    "utterances": [
+      "I want to add a minor",
+      "I want to drop a minor",
+      "I finished the requirements for my minor",
+      "How can I declare a minor",
+      "Where can I find the form to change minors"
+    ],
+    "response_template": "Hello {student_name},\n\nThanks for reaching out! To add or drop a minor, you will need to complete the Major/Minor Declaration/Change form, available here: {major_minor_declaration_form}. The form must be submitted to your academic advisor. We would be happy to meet to discuss this decision and help you create an updated academic plan. Let us know what you decide! Best regards, Academic Advising Team",
+    "follow_up_questions": [
+      "Have you checked if the classes you’ve taken count towards this minor?"
+    ]
+  },
+  { 
+    "id": "major_requirements",
+    "subject": "Major Requirement Information",
+    "categories": [
+      "majors",
+      "requirements"
+    ],
+    "utterances": [
+      "What are the requirements for my major?",
+      "Where can I find the requirements for my major?",
+      "Does this class count towards my major?",
+      "Can I have this class count towards the IEOR core requirements instead of major requirements?",
+      "Can I double count this class?"
+    ],
+    "response_template": "Hello {student_name},\n\nThanks for reaching out! To find the latest information about the IEOR undergraduate curriculum, you can consult the IEOR Undergraduate curriculum page, available here: {undergraduate_curriculum_page}. Here, you will find information about the common IEOR core, as well as specific requirements for each IEOR major and a link to eligible IEOR electives. If you have further questions, we would be happy to meet with you to discuss your program plan and specific classes that you are considering taking. Let us know what you decide! Best regards, Academic Advising Team",
+    "follow_up_questions": [
+      ""
+    ]
+  },
+  { 
+    "id": "minor_requirements",
+    "subject": "Minor Requirement Information",
+    "categories": [
+      "minors",
+      "requirements"
+    ],
+    "utterances": [
+      "What are the requirements for my minor?",
+      "Where can I find the requirements for my minor?",
+      "Can I double count this class?"
+    ],
+    "response_template": "Hello {student_name},\n\nThanks for reaching out! To find the latest information about minor requirements, you can consult the Undergraduate Minors section of the Columbia Engineering Bulletin. Here, you will find the list of minors, the requirements of each, and whether you can double count a minor. information about the common IEOR core, as well as specific requirements for each IEOR major and a link to eligible IEOR electives. If you have further questions, we would be happy to meet with you to discuss your program plan and specific classes that you are considering taking. Let us know what you decide! Best regards, Academic Advising Team",
+    "follow_up_questions": [
+      ""
+    ]
+  },
+  { 
+    "id": "requirements_changed",
+    "subject": "Major and Minor Requirements Changing",
+    "categories": [
+      "majors",
+      "minors",
+      "requirements"
+    ],
+    "utterances": [
+      "My major requirements changed",
+      "My minor requirements changed",
+      "Can I use the old requirements instead?"
+    ],
+    "response_template": "Hello {student_name},\n\nThanks for reaching out! If you began to fulfill the requirements for your {major/minor} according to the old requirements, then you can continue to fulfill the old requirements. If you have further questions, we would be happy to meet with you to discuss your program plan and specific classes that you are considering taking. Let us know what you decide! Best regards, Academic Advising Team",
+    "follow_up_questions": [
+      "Would you like us to send the old requirements for your records?"
+    ]
+  },
+  { 
+    "id": "substitute_databases_datastructures",
+    "subject": "Substituting IEOR Core CS Requirements",
+    "categories": [
+      "majors",
+      "requirements"
+    ],
+    "utterances": [
+      "Can I take Java, Data Structures, and Databases instead of Intro to Computing and Data Engineering?",
+      "Can I take COMS W3134 and COMS W4111 instead of IEOR E2000?",
+      "Can I use the old CS core requirements?",
+      "I want to take Java, Data Structures, and Databases"
+    ],
+    "response_template": "Hello {student_name},\n\nThanks for reaching out! Although the department strongly recommends taking ENGI E1006 and IEOR E2000, this substitution is possible. To approve this substitution, you will need approval from Kelly Katsigiris, the IEOR Undergraduate Advisor. You can make an appointment with her on the IEOR Undergraduate Advising Page. Best regards, Academic Advising Team",
+    "follow_up_questions": [
+      "Are there other substitutions you would like to make?"
+    ]
+  },
+ { 
+    "id": "elective_requirements",
+    "subject": "Elective Requirements",
+    "categories": [
+      "requirements",
+      "electives"
+    ],
+    "utterances": [
+      "Does this class count towards my elective requirements?",
+      "Does this class count towards my elective requirement?",
+      "Does this class count towards my technical elective requirement?",
+      "Does this class count towards my management elective requirement?",
+      "Does this elective count towards my graduation requirement?",
+      "Does this elective count towards my technical elective requirement?",
+      "Does this elective count towards my management elective requirement?",
+      "Which courses count as technical electives?",
+      "Which courses count as technical electives?",
+      "What are my technical elective options?",
+      "Which courses count as management electives?",
+      "What are my management elective options?",
+      "How many technical electives do I need to take?",
+      "How many management electives do I need to take?",
+      "Where can I find a list of approved elective classes?",
+      "What are the approved technical electives for my major?",
+     "What are the approved management electives for my major?",
+      "I need help choosing electives",
+     "Do I need to take technical electives?",
+     "Do I need to take management electives?",
+      "Can you please approve my electives?"
+    ],
+    "response_template": "Hello {student_name},\n\nGreat question! Choosing the right electives is a key part of tailoring your degree to your interests. The approved lists for both management and technical electives can be found on the IEOR Department website in the Undergraduate Curriculum page. The official list is available at {link_to_elective_list}. \n\nHere's a quick guide:\n• **Technical Electives:** These are typically upper-level (3000-level and above) courses in IEOR or a related technical field (e.g. Computer Science, Math, Economics) designed to deepen your expertise. All IEOR majors are required to take at least six credits of IEOR technical electives, and the total number of technical credits required varies by major. \n• **Management Electives:** These courses cover topics like project management, finance, or marketing and are intended to provide you with valuable business context for your technical skills. The number of management credits required also varies by major. \n\nWe highly recommend cross-referencing the approved list with your program plan to confirm how many credits you need. \n\nBest regards,\nAcademic Advising Team",
+    "follow_up_questions": [
+      "Would you like to meet to discuss which electives align best with your interests and career goals?"
+    ]
+  },
+  { 
+    "id": "petition_electives",
+    "subject": "Petitioning Electives",
+    "categories": [
+      "electives",
+      "requirements"
+    ],
+    "utterances": [
+      "Can I petition for this class to count?",
+      "Can I petition for this class to count as a technical elective?",
+      "Can I petition for this class to count as a management elective?",
+     "I think this course aligns with IEOR themes"
+    ],
+    "response_template": "Hello {student_name},\n\nThanks for reaching out! Enrollment into a course which is not pre-approved for your program requires approval from your faculty advisor & the IEOR Department. To enroll in a course not pre-approved by the IEOR department, proceed with the following steps:\n\n1. Submit Your Request: Submit the IEOR BS Course Approval Request Form to seek approval from the IEOR Department: {ieor_course_approval_request_form}.\n2. IEOR Department Approval: Please allow the Department 1 business week to review your course request. We may follow-up if additional information is required.\n\nNote, all doctoral level courses require approval (IEOR6000-8000). If you are approved by your faculty advisor for a doctoral course, register for the course in SSOL via the waitlist before you submit this form. The IEOR Department will review your request within 1 business week (2 business days during add/drop) and admit you into the course from the waitlist.\n\nReminder: Courses from SPS / QMSS classes are not approved.\nReminder: Programming courses from CBS are not approved.\n\nWe would be happy to meet with you to discuss your program plan and if this course makes sense with your professional interests.\n\nBest regards,\nAcademic Advising Team",
+    "follow_up_questions": [
+      "Would you like to meet to discuss your other electives and program plan?",
+      "Have you met with your faculty advisor to discuss this course?"
+    ]
+  },
+  { 
+    "id": "double_counting_courses",
+    "subject": "Double Counting Classes",
+    "categories": [
+      "majors",
+      "minors",
+      "electives",
+      "requirements"
+    ],
+    "utterances": [
+      "Can I double count this class?",
+      "Can I double count this class as a non-tech and a management elective?",
+      "Can I double count this class towards my major and my minor?"
+    ],
+    "response_template": "Hello {student_name},\n\nThanks for reaching out! Best regards, Academic Advising Team",
+    "follow_up_questions": [
+      "?"
+    ]
+  },
+ { 
+    "id": "graduation_application",
+    "subject": "Applying to Graduate",
+    "categories": [
+      "graduation",
+      "requirements"
+    ],
+    "utterances": [
+      "How do I apply for graduation?",
+      "Am I on track to graduate?",
+      "When is the graduation application deadline?",
+      "I’d like to get my program plan approved"
+    ],
+    "response_template": "Hello {student_name},\n\nCongratulations on reaching your final year! To be approved for graduation, you must first fill out the program plan for your major. These can be found on the IEOR Undergraduate Advising and Resources page, available here: {link_to_undergrad_advising}. Afterward, please send your finished plan to the head of IEOR Undergraduate Advising Kelly Katsigiris so she can sign off on your program plan. After you receive Kelly’s signature, you can send the program plan to the Center for Student Advising to process. \n\nOnce all of this is cleared, you must submit the degree application form in Vergil. The deadline to apply for {term} graduation is {graduation_application_deadline}.\n\nPlease be sure to review your program plan and degree audit on Stellic to confirm that all requirements will be met by the end of the term. If you see any discrepancies or have questions about remaining requirements, please schedule a meeting with us as soon as possible for a final review.\n\nWe look forward to celebrating with you!\n\nSincerely,\nAcademic Advising Team",
+    "follow_up_questions": [
+      "Have you filled out your program plan?"
+    ]
+  },
+ { 
+    "id": "ms_express",
+    "subject": "Information about MS Express",
+    "categories": [
+      "graduation",
+      "requirements",
+      "graduate school"
+    ],
+    "utterances": [
+      "Where can I find information about MS Express?",
+      "How can I apply for MS Express?",
+      "When is the MS Express application deadline?",
+      "Which of my classes might count towards MS Express?"
+    ],
+    "response_template": "Hello {student_name},\n\nWe’re excited to hear that you are considering a graduate education at Columbia Engineering! MS Express is a simplified process of applying to Columbia Engineering's Master of Science programs available to currently enrolled seniors at Columbia Engineering and young alumni (students who graduated from Columbia Engineering within the last three years). Columbia Engineering undergraduates and young alumni may apply to any engineering MS program using the express application. A minimum cumulative 3.3 GPA is required. \n\nYou can apply through MS Express here: {MS_express_link}. The application requires official transcripts, a personal statement, a resume or CV, and contact information for three references. There is no application fee. \n\nWe would be happy to meet with you if you have further questions about how your undergraduate courses might count towards an MS degree. \n\nBest regards, \nAcademic Advising Team",
+    "follow_up_questions": [
+      "Would you like to meet to discuss which undergraduate classes might count towards an MS degree?"
+    ]
+  },
+ { 
+    "id": "advanced_track",
+    "subject": "Information about IEOR Advanced Track",
+    "categories": [
+      "requirements"
+    ],
+    "utterances": [
+      "Where can I find information about the advanced track?",
+      "How can I apply for the advanced track?",
+      "What is the difference between the regular IEOR core and the advanced track?",
+      "Should I do the advanced track?"
+    ],
+    "response_template": "Hello {student_name},\n\nThe Undergraduate Advanced Track (UAT) is designed for advanced undergraduate students with the desire to pursue further education after graduation. Students with a minimum cumulative GPA of 3.4 and faculty approval have the opportunity to participate. Students are invited to apply to the track upon completing their sophomore year. The application can be accessed here: {link_to_uat_app}. Students successfully completing the requirements of the undergraduate advanced track will receive recognition on their academic record.\n\nUAT students are required to take IEOR E3700: Research Immersion in OR and Data Analytics, IEOR E3900: Undergrad Research or Project, and six Advanced Course credits from an approved list of courses. You can find more information about coursework in the Columbia Engineering Bulletin, available here: {link_to_uat}.\n\nBest regards, \nAcademic Advising Team",
+    "follow_up_questions": [
+      "Would you like to meet to discuss how the Undergraduate Advanced Track might further your career and academic goals?"
+    ]
+  },
+ { 
+    "id": "major_declaration",
+    "subject": "Information about Major Declaration",
+    "categories": [
+      "majors"
+    ],
+    "utterances": [
+      "When will I declare my major?",
+      "How do I choose which IEOR major to declare?",
+      "What is the difference between the IEOR majors?"
+    ],
+    "response_template": "Hello {student_name},\n\nAll Columbia Engineering Undergraduate students declare their major in October of their second year. Major declaration for Columbia Engineering sophomores is open this fall from {start_date} to {end_date}. For more information on the steps to declare your major, please visit the Major Declaration page on the Center for Student Advising website, available here: {link_to_csa_declaration}. \n\nThe IEOR department offers five undergraduate majors: Industrial Engineering, Operations Research, Operations Research: Analytics, Operations Research: Engineering Management Systems, and Operations Research: Financial Engineering. Each major requires three concentration requirements, as well as varying numbers of technical and management elective credits. For information about the curricular requirements for each major, please visit the Undergraduate Curriculum page on the IEOR department website, available here: {link_to_undergrad_curriculum}.\n\nWe would be happy to meet with you to discuss the specific major requirements and to devise an IEOR program plan.\n\nBest regards,\nAcademic Advising Team",
+    "follow_up_questions": [
+      "Which IEOR majors are you considering?"
+    ]
+  },
+ { 
+    "id": "research_opportunities",
+    "subject": "Information about Research Opportunities",
+    "categories": [
+      "research"
+    ],
+    "utterances": [
+      "I want to get involved in research",
+      "How can I find IEOR research opportunities?",
+      "Where is a list of IEOR research opportunities?",
+      "How can I complete research for credit?"  
+    ],
+    "response_template": "Hello {student_name},\n\nWe’re happy to hear that you are interested in IEOR research! The IEOR department provides many exciting research and project opportunities to undergraduate students in IEOR. To explore the diverse research areas within our department, please refer to the overview page on departmental research, available here: {link_to_research}. IEOR students stay updated on the latest research and project opportunities via newsletters. We also encourage students to take the initiative and contact faculty members directly for potential research collaborations. For more information, we encourage you to contact Yi Zhang (yz3558@columbia.edu) or Eric Balkanski (eb3224@columbia.edu).\n\nBest regards,\nAcademic Advising Team",
+    "follow_up_questions": [
+      "?"
+    ]
+  },
+ { 
+    "id": "study_abroad",
+    "subject": "Information about Studying Abroad",
+    "categories": [
+      "majors",
+      "minors",
+      "requirements",
+      "abroad"
+    ],
+    "utterances": [
+      "I want to study abroad",
+      "Am I able to study abroad?",
+      "Which classes can I take abroad?",
+      "When am I allowed to study abroad?"  
+    ],
+    "response_template": "Hello {student_name},\n\nWe’re happy to hear that you are considering studying abroad! Columbia Engineering undergraduates typically study abroad during the spring semester of their sophomore year. Alternatively, you might choose to study abroad during the summer through a Columbia-sponsored program. During certain study abroad programs, students are able to fulfill some of their engineering prerequisite requirements and/or humanities core requirements. For more information about available programs, please visit the Programs page on the Center for Undergraduate Engagement website, available here: {study_abroad_opportunities}.\n\nWe would be happy to meet with you to discuss which programs might be best suited for your academic and professional interests, as well as to talk about which requirements can be fulfilled abroad.\n\nWarm regards,\nAcademic Advising Team",
+    "follow_up_questions": [
+      "Are there specific programs that you are considering?",
+     "Which requirements would you prefer to complete at an outside institution?"
+    ]
+  },
+ { 
+    "id": "struggling_in_classes",
+    "subject": "Support for Students Struggling in Class",
+    "categories": [
+      "majors",
+      "minors",
+      "requirements"
+    ],
+    "utterances": [
+      "I am struggling in my classes",
+      "I am having a hard time in my classes this semester",
+      "I’m worried about my grades in my classes this semester",
+      "I’m worried about my GPA",
+      "I need help in my classes"  
+    ],
+    "response_template": "Hello {student_name},\n\nWe’re sorry to hear that you are having a hard time this semester. We would like to meet with you to discuss your concerns and to devise a plan for how to address them. Our Head of Undergraduate Advising, Kelly Katsigiris, can help to address your curricular concerns.\n\nAdditionally, Columbia Health Services and Engineering Wellness will be your best resources for your health and wellness needs. If you feel stressed, chat on the phone with a mental health professional or sign up for a meeting. All links can be found on the Health and Wellness page of the IEOR department website: {link_to_health_wellness}.\n\nPlease know that we are always here to support you.\n\nWarmly,\nAcademic Advising Team",
+    "follow_up_questions": [
+      "?"
+    ]
+  },
+ { 
+    "id": "barnard_four_plus_one",
+    "subject": "Information about Barnard 4+1",
+    "categories": [
+      "majors",
+      "requirements",
+      "pathways"
+    ],
+    "utterances": [
+      "What are the requirements for the Barnard 4+1 Pathway in IEOR?",
+      "When is the Barnard 4+1 application due?",
+      "Where can I learn more about the Barnard 4+1 pathway?",
+      "What are the prerequisites to apply for the Barnard 4+1 in IEOR?",
+      "Which of my classes count towards an MS degree if I do the Barnard 4+1 program?",
+     "How will my credits transfer to an MS degree through Barnard 4+1?"  
+    ],
+    "response_template": "Hello {student_name},\n\nWe’re happy to hear that you are considering Columbia Engineering for your graduate education! Barnard College offers several pathways in conjunction with Columbia Engineering, including a BA/MS in Industrial Engineering and Operations Research. For all of the 4+1 pathways, students must maintain a GPA at or above 3.5 and apply by February 15 of their junior year. Applications for the Engineering 4+1 Pathways are submitted directly to Columbia Engineering. No standardized test scores are required for 4+1 applicants.\n\nFor the BS/MS in Industrial Engineering and Operations Research, students must complete the following prerequisites by the end of their fall semester of their junior year: Multivariable Calculus for Engineering and Applied Science (or Calculus III), Linear Algebra, Introduction to Probability & Statistics, and Foundations of Data Science. The majors with requirements that most closely track with these prerequisites are Economics & Math and Economics & Statistics. Other majors may apply to the pathway but students should discuss their plans with the Barnard faculty lead to assess their readiness for masters level engineering classes and the strength of their application. Successful applicants have extensive quantitative course work through their major or minor. \n\nFor more information, please visit the 4+1 Pathways page on the Barnard website, available here: {barnard_four_plus_one}. We would be happy to meet with you to discuss how your undergraduate coursework might translate to the MS degree.\n\nBest regards,\nAcademic Advising Team",
+    "follow_up_questions": [
+      "Are there specific programs that you are considering?",
+     "Have you compiled all of your application materials?"
+    ]
+  },
+ { 
+    "id": "three_plus_two_program",
+    "subject": "Information about 3+2 Program",
+    "categories": [
+      "majors",
+      "requirements",
+      "pathways"
+    ],
+    "utterances": [
+      "?",
+      "?",
+      "?",
+      "?",
+      "?",
+     "?"  
+    ],
+    "response_template": "Hello {student_name},\n\n        \n\nBest regards,\nAcademic Advising Team",
+    "follow_up_questions": [
+      "?",
+     "?"
     ]
   }
 ]
