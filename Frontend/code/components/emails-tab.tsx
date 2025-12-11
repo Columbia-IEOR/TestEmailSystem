@@ -12,7 +12,9 @@ type FilterType =
   | "all" 
   | "today"           // Received Today
   | "yesterday"       // Received Yesterday  
-  | "thisWeek";       // Received This Week
+  | "thisWeek"        // Received This Week
+  | "thisMonth"       // Received This Month
+  | "thisYear";       // Received This Year
 
 type EmailStatus = "auto" | "review" | "sent";
 
@@ -45,9 +47,6 @@ type SyncResult = {
 };
 
 const BACKEND_URL = "http://127.0.0.1:8000";
-const CONFIDENCE_THRESHOLD_KEY = "confidenceThresholdPct";
-const CONFIDENCE_THRESHOLD_UPDATED_EVENT = "confidence-threshold-updated";
-const DEFAULT_CONFIDENCE_THRESHOLD_PCT = 90; // fallback if nothing saved
 const DRAFTS_STORAGE_KEY = "emailDrafts";
 const AUTO_SYNC_INTERVAL = 60000; // 60 seconds
 
@@ -165,6 +164,27 @@ function isWithinLastNDays(received_at: string, days: number): boolean {
   return received >= cutoff;
 }
 
+/**
+ * Check if a timestamp is within the current calendar month (LOCAL time)
+ */
+function isReceivedThisMonth(received_at: string): boolean {
+  const emailDate = parseReceivedAt(received_at);
+  const now = new Date();
+  return (
+    emailDate.getFullYear() === now.getFullYear() &&
+    emailDate.getMonth() === now.getMonth()
+  );
+}
+
+/**
+ * Check if a timestamp is within the current calendar year (LOCAL time)
+ */
+function isReceivedThisYear(received_at: string): boolean {
+  const emailDate = parseReceivedAt(received_at);
+  const now = new Date();
+  return emailDate.getFullYear() === now.getFullYear();
+}
+
 export default function EmailsTab() {
   const [searchTerm, setSearchTerm] = useState("");
   const [activeFilter, setActiveFilter] = useState<FilterType>("all");
@@ -193,11 +213,6 @@ export default function EmailsTab() {
   // Gmail connection status
   const [gmailConnected, setGmailConnected] = useState<boolean>(false);
 
-  // confidence threshold for reference
-  const [confidenceThreshold, setConfidenceThreshold] = useState<number>(
-    DEFAULT_CONFIDENCE_THRESHOLD_PCT / 100,
-  );
-
   // Bulk selection
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
   const [bulkActionLoading, setBulkActionLoading] = useState<boolean>(false);
@@ -211,70 +226,14 @@ export default function EmailsTab() {
     { id: "today", label: "Today", description: "Emails received today" },
     { id: "yesterday", label: "Yesterday", description: "Emails received yesterday" },
     { id: "thisWeek", label: "This Week", description: "Emails received in the last 7 days" },
+    { id: "thisMonth", label: "This Month", description: "Emails received during the current month" },
+    { id: "thisYear", label: "This Year", description: "Emails received during the current year" },
   ];
 
   // Show toast notification
   const showToast = useCallback((message: string, type: "success" | "error") => {
     setToast({ message, type });
     setTimeout(() => setToast(null), 4000);
-  }, []);
-
-  // --- Load confidence threshold from localStorage (set in Settings) ---
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-
-    const saved = window.localStorage.getItem(CONFIDENCE_THRESHOLD_KEY);
-    if (!saved) return;
-
-    const pct = Number(saved);
-    if (!Number.isNaN(pct) && pct >= 0 && pct <= 100) {
-      setConfidenceThreshold(pct / 100);
-    }
-  }, []);
-
-  // --- React to threshold updates from other tabs/windows ---
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-
-    const applyThresholdPct = (pct: number) => {
-      if (Number.isNaN(pct)) return;
-      const clamped = Math.min(Math.max(pct, 0), 100);
-      setConfidenceThreshold(clamped / 100);
-    };
-
-    const readAndApply = (raw: string | null) => {
-      if (!raw) {
-        applyThresholdPct(DEFAULT_CONFIDENCE_THRESHOLD_PCT);
-        return;
-      }
-      const pct = Number(raw);
-      if (!Number.isNaN(pct)) {
-        applyThresholdPct(pct);
-      }
-    };
-
-    const handleStorage = (event: StorageEvent) => {
-      if (event.key === CONFIDENCE_THRESHOLD_KEY) {
-        readAndApply(event.newValue ?? window.localStorage.getItem(CONFIDENCE_THRESHOLD_KEY));
-      }
-    };
-
-    const handleCustom = (event: Event) => {
-      const detail = (event as CustomEvent<{ pct?: number }>).detail;
-      if (detail && typeof detail.pct === "number") {
-        applyThresholdPct(detail.pct);
-        return;
-      }
-      readAndApply(window.localStorage.getItem(CONFIDENCE_THRESHOLD_KEY));
-    };
-
-    window.addEventListener("storage", handleStorage);
-    window.addEventListener(CONFIDENCE_THRESHOLD_UPDATED_EVENT, handleCustom);
-
-    return () => {
-      window.removeEventListener("storage", handleStorage);
-      window.removeEventListener(CONFIDENCE_THRESHOLD_UPDATED_EVENT, handleCustom);
-    };
   }, []);
 
   // --- Load saved drafts from localStorage ---
@@ -682,7 +641,7 @@ export default function EmailsTab() {
     return () => clearInterval(interval);
   }, [gmailConnected, showToast]);
 
-  // --- Categorize emails anytime list or threshold changes ---
+  // --- Categorize emails anytime backend list changes ---
   useEffect(() => {
     const nextReview: Email[] = [];
     const nextPending: Email[] = [];
@@ -691,10 +650,7 @@ export default function EmailsTab() {
     emails.forEach((email) => {
       if (email.status === "sent") {
         nextSent.push(email);
-        return;
-      }
-
-      if (email.confidence < confidenceThreshold) {
+      } else if (email.status === "review") {
         nextReview.push(email);
       } else {
         nextPending.push(email);
@@ -704,7 +660,7 @@ export default function EmailsTab() {
     setReviewEmails(nextReview);
     setPendingEmails(nextPending);
     setSentEmails(nextSent);
-  }, [emails, confidenceThreshold]);
+  }, [emails]);
 
   // --- FIXED: Helper to apply filter + search to a list of emails ---
   function filterEmails(emails: Email[]): Email[] {
@@ -721,6 +677,14 @@ export default function EmailsTab() {
 
     if (activeFilter === "thisWeek") {
       filtered = filtered.filter((e) => isWithinLastNDays(e.received_at, 7));
+    }
+
+    if (activeFilter === "thisMonth") {
+      filtered = filtered.filter((e) => isReceivedThisMonth(e.received_at));
+    }
+
+    if (activeFilter === "thisYear") {
+      filtered = filtered.filter((e) => isReceivedThisYear(e.received_at));
     }
 
     // Text search: student name, UNI, subject
@@ -767,15 +731,9 @@ export default function EmailsTab() {
   const hasUnsavedChanges =
     selectedEmail && replyDraft !== (savedDrafts[selectedEmail.id] ?? selectedEmail.suggested_reply);
 
-  // Determine derived status for selected email relative to threshold
-  const isSelectedEmailPending =
-    !!selectedEmail &&
-    selectedEmail.status !== "sent" &&
-    selectedEmail.confidence >= confidenceThreshold;
-  const isSelectedEmailNeedsReview =
-    !!selectedEmail &&
-    selectedEmail.status !== "sent" &&
-    selectedEmail.confidence < confidenceThreshold;
+  // Determine derived status for selected email from backend state
+  const isSelectedEmailPending = !!selectedEmail && selectedEmail.status === "auto";
+  const isSelectedEmailNeedsReview = !!selectedEmail && selectedEmail.status === "review";
   const canEditSelectedEmail = !!selectedEmail && selectedEmail.status !== "sent";
   
   if (loading && !seeding && emails.length === 0) {
@@ -830,26 +788,22 @@ export default function EmailsTab() {
 
         {/* Metrics strip - use correctEmailsTodayCount instead of backend value */}
         {metrics && (
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             <div className="rounded-lg border border-border p-3">
-              <p className="text-xs text-muted-foreground">Total emails</p>
-              <p className="text-xl font-semibold">{metrics.emails_total}</p>
+              <p className="text-xs text-muted-foreground">Emails Today</p>
+              <p className="text-xl font-semibold text-foreground">{correctEmailsTodayCount}</p>
             </div>
             <div className="rounded-lg border border-border p-3">
-              <p className="text-xs text-muted-foreground">Emails today</p>
-              <p className="text-xl font-semibold">{correctEmailsTodayCount}</p>
+              <p className="text-xs text-muted-foreground">Needs Review</p>
+              <p className="text-xl font-semibold text-foreground">{reviewEmails.length}</p>
             </div>
             <div className="rounded-lg border border-border p-3">
-              <p className="text-xs text-muted-foreground">Needs review</p>
-              <p className="text-xl font-semibold">{reviewEmails.length}</p>
-            </div>
-            <div className="rounded-lg border border-border p-3">
-              <p className="text-xs text-muted-foreground">Pending send</p>
-              <p className="text-xl font-semibold">{pendingEmails.length}</p>
+              <p className="text-xs text-muted-foreground">Pending Send</p>
+              <p className="text-xl font-semibold text-foreground">{pendingEmails.length}</p>
             </div>
             <div className="rounded-lg border border-border p-3">
               <p className="text-xs text-muted-foreground">Sent</p>
-              <p className="text-xl font-semibold">{sentEmails.length}</p>
+              <p className="text-xl font-semibold text-foreground">{sentEmails.length}</p>
             </div>
           </div>
         )}
