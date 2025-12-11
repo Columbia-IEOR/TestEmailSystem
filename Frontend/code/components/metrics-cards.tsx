@@ -106,7 +106,7 @@ export default function MetricsCards() {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [chartView, setChartView] =
-    useState<"daily" | "weekly" | "monthly">("daily");
+    useState<"daily" | "weekly" | "monthly" | "yearly">("daily");
 
   async function fetchData() {
     try {
@@ -241,7 +241,7 @@ export default function MetricsCards() {
       const end = new Date(year, month + 1, 1);
 
       const count = sourceEmails.filter((e) => {
-        const t = new Date(e.received_at);
+        const t = parseReceivedAt(e.received_at);
         return t >= start && t < end;
       }).length;
 
@@ -251,12 +251,38 @@ export default function MetricsCards() {
     return months;
   }
 
-  const chartData =
-    chartView === "daily"
-      ? buildDailyData(emails)
-      : chartView === "weekly"
-      ? buildWeeklyData(emails)
-      : buildMonthlyData(emails);
+  function buildYearlyData(sourceEmails: Email[]): ChartPoint[] {
+    const currentYear = new Date().getFullYear();
+    const years: ChartPoint[] = [];
+
+    for (let offset = 4; offset >= 0; offset--) {
+      const year = currentYear - offset;
+      const start = new Date(year, 0, 1);
+      const end = new Date(year + 1, 0, 1);
+      const count = sourceEmails.filter((e) => {
+        const t = parseReceivedAt(e.received_at);
+        return t >= start && t < end;
+      }).length;
+      years.push({ date: String(year), count });
+    }
+
+    return years;
+  }
+
+  const chartData = (() => {
+    switch (chartView) {
+      case "daily":
+        return buildDailyData(emails);
+      case "weekly":
+        return buildWeeklyData(emails);
+      case "monthly":
+        return buildMonthlyData(emails);
+      case "yearly":
+        return buildYearlyData(emails);
+      default:
+        return buildDailyData(emails);
+    }
+  })();
 
   const adjustedChartData =
     chartView === "daily" && chartData.length > 0
@@ -337,72 +363,70 @@ export default function MetricsCards() {
     <div className="space-y-4">
       {/* Top Stats */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-
         {/* Emails Today */}
         <Card className="border border-blue-100 shadow-sm hover:shadow-md transition-shadow">
-          <CardHeader className="pb-3">
+          <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
               Emails Today
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-blue-600">{emailsToday}</div>
-            <p className="mt-2 text-xs text-muted-foreground whitespace-nowrap">
-              Total emails received today
+            <div className="text-3xl font-bold text-blue-600 -mt-1">{emailsToday}</div>
+            <p className="mt-3 text-xs text-muted-foreground">
+              Number of emails received today
             </p>
           </CardContent>
         </Card>
 
-        {/* Manual Review */}
+        {/* Needs Review */}
         <Card className="border border-blue-100 shadow-sm hover:shadow-md transition-shadow">
-          <CardHeader className="pb-3">
+          <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
-              Manual Review
+              Needs Review
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-blue-600">{manualReview}</div>
-
-            <p className="mt-2 text-xs text-muted-foreground whitespace-nowrap">
-              {manualReview === 0 ? (
-                "No emails pending review"
-              ) : (
-                <>Queue size · Oldest: {oldestPendingLabel}</>
-              )}
+            <div className="text-3xl font-bold text-blue-600 -mt-1">{manualReview}</div>
+            <p className="mt-3 text-xs text-muted-foreground">
+              Number of emails that need manual review
             </p>
+            {manualReview > 0 && (
+              <p className="text-xs text-muted-foreground mt-1">
+                Oldest waiting: {oldestPendingLabel}
+              </p>
+            )}
           </CardContent>
         </Card>
 
         {/* Pending Send */}
         <Card className="border border-blue-100 shadow-sm hover:shadow-md transition-shadow">
-          <CardHeader className="pb-3">
+          <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
               Pending Send
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-blue-600">{pendingSend}</div>
-            <p className="mt-2 text-xs text-muted-foreground whitespace-nowrap">
-              Approved emails waiting to send
+            <div className="text-3xl font-bold text-blue-600 -mt-1">{pendingSend}</div>
+            <p className="mt-3 text-xs text-muted-foreground">
+              Number of approved emails waiting to be sent
             </p>
           </CardContent>
         </Card>
 
         {/* Sent */}
         <Card className="border border-blue-100 shadow-sm hover:shadow-md transition-shadow">
-          <CardHeader className="pb-3">
+          <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
-              Sent Emails
+              Sent
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-blue-600">{sentCount}</div>
-            <p className="mt-2 text-xs text-muted-foreground whitespace-nowrap">
-              Replies already delivered
+            <div className="text-3xl font-bold text-blue-600 -mt-1">{sentCount}</div>
+            <p className="mt-3 text-xs text-muted-foreground">
+              Number of replies delivered
             </p>
           </CardContent>
         </Card>
-
       </div>
 
       {/* Chart */}
@@ -441,6 +465,16 @@ export default function MetricsCards() {
               }
             >
               Monthly
+            </Button>
+            <Button
+              size="sm"
+              variant={chartView === "yearly" ? "default" : "outline"}
+              onClick={() => setChartView("yearly")}
+              className={
+                chartView === "yearly" ? "bg-blue-600 hover:bg-blue-700" : ""
+              }
+            >
+              Yearly
             </Button>
           </div>
         </CardHeader>

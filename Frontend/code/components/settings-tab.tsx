@@ -87,6 +87,53 @@ type EmailSettingsState = {
   gmail_connected: boolean;
   gmail_address: string | null;
 };
+const EMAIL_SETTINGS_CACHE_KEY = "emailSettingsCache";
+const DEFAULT_EMAIL_SETTINGS: EmailSettingsState = {
+  auto_send_enabled: false,
+  auto_send_threshold: DEFAULT_CONFIDENCE_THRESHOLD_PCT,
+  last_synced_at: null,
+  gmail_connected: false,
+  gmail_address: null,
+};
+
+function readCachedEmailSettings(): EmailSettingsState {
+  if (typeof window === "undefined") {
+    return DEFAULT_EMAIL_SETTINGS;
+  }
+  const cached = window.localStorage.getItem(EMAIL_SETTINGS_CACHE_KEY);
+  if (!cached) return DEFAULT_EMAIL_SETTINGS;
+  try {
+    const parsed = JSON.parse(cached) as Partial<EmailSettingsState>;
+    return {
+      ...DEFAULT_EMAIL_SETTINGS,
+      auto_send_enabled:
+        typeof parsed.auto_send_enabled === "boolean"
+          ? parsed.auto_send_enabled
+          : DEFAULT_EMAIL_SETTINGS.auto_send_enabled,
+      auto_send_threshold:
+        typeof parsed.auto_send_threshold === "number"
+          ? parsed.auto_send_threshold
+          : DEFAULT_EMAIL_SETTINGS.auto_send_threshold,
+      last_synced_at:
+        typeof parsed.last_synced_at === "string" ? parsed.last_synced_at : null,
+      gmail_connected:
+        typeof parsed.gmail_connected === "boolean"
+          ? parsed.gmail_connected
+          : DEFAULT_EMAIL_SETTINGS.gmail_connected,
+      gmail_address:
+        typeof parsed.gmail_address === "string"
+          ? parsed.gmail_address
+          : DEFAULT_EMAIL_SETTINGS.gmail_address,
+    };
+  } catch {
+    return DEFAULT_EMAIL_SETTINGS;
+  }
+}
+
+function persistEmailSettings(next: EmailSettingsState) {
+  if (typeof window === "undefined") return;
+  window.localStorage.setItem(EMAIL_SETTINGS_CACHE_KEY, JSON.stringify(next));
+}
 
 export default function SettingsTab() {
   const { toast } = useToast();
@@ -128,13 +175,9 @@ export default function SettingsTab() {
   const [fetchingUrl, setFetchingUrl] = useState(false);
 
   // Email client / Gmail OAuth settings
-  const [emailSettings, setEmailSettings] = useState<EmailSettingsState>({
-    auto_send_enabled: false,
-    auto_send_threshold: DEFAULT_CONFIDENCE_THRESHOLD_PCT,
-    last_synced_at: null,
-    gmail_connected: false,
-    gmail_address: null,
-  });
+  const [emailSettings, setEmailSettings] = useState<EmailSettingsState>(() =>
+    readCachedEmailSettings()
+  );
   const [savingEmailSettings, setSavingEmailSettings] = useState(false);
   const [emailSettingsError, setEmailSettingsError] = useState<string | null>(null);
   const [settingsSaved, setSettingsSaved] = useState(false);
@@ -183,13 +226,13 @@ export default function SettingsTab() {
       })
       .then((data) => {
         if (!data) {
-          setEmailSettings((prev) => ({
+          applyPersistedEmailSettings((prev) => ({
             ...prev,
             auto_send_threshold: thresholdPct,
           }));
           return;
         }
-        setEmailSettings((prev) => ({
+        applyPersistedEmailSettings((prev) => ({
           ...prev,
           auto_send_enabled:
             typeof data.auto_send_enabled === "boolean"
@@ -204,7 +247,7 @@ export default function SettingsTab() {
         setEmailSettingsDirty(false);
       })
       .catch(() => {
-        setEmailSettings((prev) => ({
+        applyPersistedEmailSettings((prev) => ({
           ...prev,
           auto_send_threshold: thresholdPct,
         }));
@@ -218,7 +261,7 @@ export default function SettingsTab() {
       })
       .then((data) => {
         if (!data) return;
-        setEmailSettings((prev) => ({
+        applyPersistedEmailSettings((prev) => ({
           ...prev,
           gmail_connected: !!data.connected,
           gmail_address: data.email_address ?? null,
@@ -545,6 +588,16 @@ export default function SettingsTab() {
   // ---------------------
   // Email Client settings interactions (Gmail OAuth)
   // ---------------------
+  function applyPersistedEmailSettings(
+    updater: (prev: EmailSettingsState) => EmailSettingsState,
+  ) {
+    setEmailSettings((prev) => {
+      const next = updater(prev);
+      persistEmailSettings(next);
+      return next;
+    });
+  }
+
   function updateEmailSettings<K extends keyof EmailSettingsState>(
     key: K,
     value: EmailSettingsState[K]
@@ -582,7 +635,7 @@ export default function SettingsTab() {
 
       if (res.ok) {
         const data = await res.json();
-        setEmailSettings((prev) => ({
+        applyPersistedEmailSettings((prev) => ({
           ...prev,
           auto_send_enabled:
             typeof data.auto_send_enabled === "boolean"
@@ -641,7 +694,7 @@ export default function SettingsTab() {
         const text = await res.text();
         throw new Error(text || "Failed to disconnect Gmail");
       }
-      setEmailSettings((prev) => ({
+      applyPersistedEmailSettings((prev) => ({
         ...prev,
         gmail_connected: false,
         gmail_address: null,
