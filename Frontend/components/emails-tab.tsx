@@ -16,7 +16,7 @@ type FilterType =
   | "thisMonth"       // Received This Month
   | "thisYear";       // Received This Year
 
-type EmailStatus = "auto" | "review" | "sent";
+type EmailStatus = "auto" | "review" | "sent" | "personal";
 
 export type Email = {
   id: number;
@@ -188,12 +188,13 @@ function isReceivedThisYear(received_at: string): boolean {
 export default function EmailsTab() {
   const [searchTerm, setSearchTerm] = useState("");
   const [activeFilter, setActiveFilter] = useState<FilterType>("all");
-  const [activeSection, setActiveSection] = useState<"review" | "pending" | "sent">("review");
+  const [activeSection, setActiveSection] = useState<"review" | "pending" | "sent" | "personal">("review");
 
   const [emails, setEmails] = useState<Email[]>([]);
   const [reviewEmails, setReviewEmails] = useState<Email[]>([]);
   const [pendingEmails, setPendingEmails] = useState<Email[]>([]);
   const [sentEmails, setSentEmails] = useState<Email[]>([]);
+  const [personalEmails, setPersonalEmails] = useState<Email[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [seeding, setSeeding] = useState<boolean>(false);
@@ -646,9 +647,12 @@ export default function EmailsTab() {
     const nextReview: Email[] = [];
     const nextPending: Email[] = [];
     const nextSent: Email[] = [];
+    const nextPersonal: Email[] = [];
 
     emails.forEach((email) => {
-      if (email.status === "sent") {
+      if (email.status === "personal") {
+        nextPersonal.push(email);
+      } else if (email.status === "sent") {
         nextSent.push(email);
       } else if (email.status === "review") {
         nextReview.push(email);
@@ -660,6 +664,7 @@ export default function EmailsTab() {
     setReviewEmails(nextReview);
     setPendingEmails(nextPending);
     setSentEmails(nextSent);
+    setPersonalEmails(nextPersonal);
   }, [emails]);
 
   // --- FIXED: Helper to apply filter + search to a list of emails ---
@@ -705,6 +710,7 @@ export default function EmailsTab() {
   const filteredReviewEmails = filterEmails(reviewEmails);
   const filteredPendingEmails = filterEmails(pendingEmails);
   const filteredSentEmails = filterEmails(sentEmails);
+  const filteredPersonalEmails = filterEmails(personalEmails);
 
   // Calculate the CORRECT emails today count from all emails
   const allEmails = emails;
@@ -716,6 +722,8 @@ export default function EmailsTab() {
       ? filteredReviewEmails.filter((e) => selectedIds.has(e.id)).length
       : activeSection === "pending"
       ? filteredPendingEmails.filter((e) => selectedIds.has(e.id)).length
+      : activeSection === "personal"
+      ? filteredPersonalEmails.filter((e) => selectedIds.has(e.id)).length
       : filteredSentEmails.filter((e) => selectedIds.has(e.id)).length;
 
   const currentEmails =
@@ -723,6 +731,8 @@ export default function EmailsTab() {
       ? filteredReviewEmails
       : activeSection === "pending"
       ? filteredPendingEmails
+      : activeSection === "personal"
+      ? filteredPersonalEmails
       : filteredSentEmails;
 
   const allVisibleSelected = currentEmails.length > 0 && currentEmails.every((e) => selectedIds.has(e.id));
@@ -788,7 +798,7 @@ export default function EmailsTab() {
 
         {/* Metrics strip - use correctEmailsTodayCount instead of backend value */}
         {metrics && (
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
             <div className="rounded-lg border border-border p-3">
               <p className="text-xs text-muted-foreground">Emails Today</p>
               <p className="text-xl font-semibold text-foreground">{correctEmailsTodayCount}</p>
@@ -804,6 +814,10 @@ export default function EmailsTab() {
             <div className="rounded-lg border border-border p-3">
               <p className="text-xs text-muted-foreground">Sent</p>
               <p className="text-xl font-semibold text-foreground">{sentEmails.length}</p>
+            </div>
+            <div className="rounded-lg border border-red-200 bg-red-50 p-3">
+              <p className="text-xs text-red-600">Personal</p>
+              <p className="text-xl font-semibold text-red-700">{personalEmails.length}</p>
             </div>
           </div>
         )}
@@ -960,6 +974,16 @@ export default function EmailsTab() {
           >
             Sent ({filteredSentEmails.length})
           </button>
+          <button
+            onClick={() => setActiveSection("personal")}
+            className={`pb-3 px-1 font-medium text-sm transition-all ${
+              activeSection === "personal"
+                ? "text-red-600 border-b-2 border-red-600"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            ⚠ Personal ({filteredPersonalEmails.length})
+          </button>
         </div>
 
         {/* Tables + per-section search boxes */}
@@ -1042,6 +1066,40 @@ export default function EmailsTab() {
               sending={sending}
               savedDrafts={savedDrafts}
               mode="pending"
+            />
+          </div>
+        )}
+
+        {activeSection === "personal" && (
+          <div className="space-y-4">
+            <div className="rounded-lg border border-red-200 bg-red-50 p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <AlertTriangle className="h-5 w-5 text-red-600" />
+                <p className="font-semibold text-red-700">Personal / Sensitive Emails</p>
+              </div>
+              <p className="text-sm text-red-600">
+                These emails contain personal or sensitive topics and require direct advisor attention. 
+                They will never be auto-sent.
+              </p>
+            </div>
+            <div className="flex items-center gap-3">
+              <Input
+                type="text"
+                placeholder="Search personal emails..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="max-w-sm"
+              />
+            </div>
+            <ManualReviewTable
+              emails={filteredPersonalEmails}
+              searchTerm={searchTerm}
+              onApprove={(id) => handleApproveAndSend(id)}
+              onDelete={handleDelete}
+              onSelect={handleSelect}
+              selectedIds={selectedIds}
+              onToggleSelect={toggleSelect}
+              savedDrafts={savedDrafts}
             />
           </div>
         )}
