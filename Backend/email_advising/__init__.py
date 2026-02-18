@@ -10,18 +10,22 @@ from .models import (
     ReferenceCorpus,
     ReferenceDocument,
 )
+
 from .rag import TfidfRetriever, load_reference_corpus
 from .metadata import MetadataExtractor
+from .personal_guardrails import PersonalEmailDetector, GuardrailResult
 
 __all__ = [
     "AdvisorReference",
     "AdvisorResponse",
     "ConfidenceSettings",
     "EmailAdvisor",
+    "GuardrailResult",
     "KnowledgeArticle",
     "KnowledgeBase",
     "LLMEmailComposer",
     "MetadataExtractor",
+    "PersonalEmailDetector",
     "RankedMatch",
     "ReferenceCorpus",
     "ReferenceDocument",

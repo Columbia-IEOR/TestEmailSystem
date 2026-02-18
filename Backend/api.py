@@ -23,6 +23,7 @@ from email_advising import (
     TfidfRetriever,
     KnowledgeArticle,
     KnowledgeBase,
+    PersonalEmailDetector,
     load_knowledge_base,
     load_reference_corpus,
 )
@@ -91,6 +92,7 @@ knowledge_base = load_knowledge_base()
 reference_corpus = load_reference_corpus()
 retriever = TfidfRetriever(reference_corpus)
 advisor = EmailAdvisor(knowledge_base, retriever=retriever)
+personal_detector = PersonalEmailDetector()
 
 
 # =====================================================
@@ -510,9 +512,10 @@ Base = declarative_base()
 
 
 class EmailStatus(str, Enum):
-    auto = "auto"      # approved / high-confidence
-    review = "review"  # needs manual review
-    sent = "sent"      # reply has been sent
+    auto = "auto"          # approved / high-confidence
+    review = "review"      # needs manual review
+    sent = "sent"          # reply has been sent
+    personal = "personal"  # flagged as personal / sensitive — never auto-send
 
 
 # ---------- Pydantic models (API schemas) ----------
@@ -985,12 +988,28 @@ def ingest_email(email_in: EmailIn):
         settings = get_or_create_settings(db)
         threshold = settings.auto_send_threshold or CONFIDENCE_THRESHOLD
 
-        # Simple policy: high confidence => auto, otherwise => review
-        status = (
-            EmailStatus.auto
-            if confidence >= threshold
-            else EmailStatus.review
-        )
+        # Guardrail: check for personal / sensitive content first
+        guardrail = personal_detector.check(email_in.body)
+        if guardrail.is_personal:
+            status = EmailStatus.personal
+            # Override suggested reply for personal emails
+            suggested_reply = (
+                "Hello {name},\n\n"
+                "Thank you for reaching out. Your message has been flagged for personal "
+                "attention from our advising team. An advisor will follow up with you "
+                "directly.\n\n"
+                "If you need immediate support, please contact:\n"
+                "• Columbia Counseling and Psychological Services (CPS): (212) 854-2878\n"
+                "• Columbia Health: (212) 854-2284\n\n"
+                "Best,\nAcademic Advising Team"
+            ).format(name=email_in.student_name or "there")
+        else:
+            # Normal policy: high confidence => auto, otherwise => review
+            status = (
+                EmailStatus.auto
+                if confidence >= threshold
+                else EmailStatus.review
+            )
 
         email_obj = EmailORM(
             student_name=email_in.student_name,
@@ -1123,9 +1142,24 @@ def sync_emails(limit: int = 20):
             confidence = float(result.confidence or 0.0)
             suggested_reply = result.body
 
-            status_enum = (
-                EmailStatus.auto if confidence >= threshold else EmailStatus.review
-            )
+            # Guardrail: check for personal / sensitive content
+            guardrail = personal_detector.check(body)
+            if guardrail.is_personal:
+                status_enum = EmailStatus.personal
+                suggested_reply = (
+                    "Hello {name},\n\n"
+                    "Thank you for reaching out. Your message has been flagged for personal "
+                    "attention from our advising team. An advisor will follow up with you "
+                    "directly.\n\n"
+                    "If you need immediate support, please contact:\n"
+                    "• Columbia Counseling and Psychological Services (CPS): (212) 854-2878\n"
+                    "• Columbia Health: (212) 854-2284\n\n"
+                    "Best,\nAcademic Advising Team"
+                ).format(name=from_name or "there")
+            else:
+                status_enum = (
+                    EmailStatus.auto if confidence >= threshold else EmailStatus.review
+                )
 
             # Extract UNI from email address (format: UNI@columbia.edu)
             extracted_uni = None
