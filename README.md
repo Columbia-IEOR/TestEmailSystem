@@ -170,7 +170,7 @@ The Email Advising System automates the process of responding to routine student
 
 1. **Navigate to frontend directory:**
    ```bash
-   cd Frontend/code
+   cd Frontend
    ```
 
 2. **Install dependencies:**

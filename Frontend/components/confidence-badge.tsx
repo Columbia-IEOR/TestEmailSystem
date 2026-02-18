@@ -1,4 +1,4 @@
-// Frontend/code/components/confidence-badge.tsx
+// Frontend/components/confidence-badge.tsx
 "use client"
 
 type ConfidenceBadgeProps = {

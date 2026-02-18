@@ -1,4 +1,4 @@
-// Frontend/code/components/sample-emails.ts
+// Frontend/components/sample-emails.ts
 
 export type SampleEmail = {
   student_name: string;
