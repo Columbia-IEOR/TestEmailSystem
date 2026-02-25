@@ -26,8 +26,7 @@ import {
   Loader2,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-
-const BACKEND_URL = "http://127.0.0.1:8000";
+import { BACKEND_URL } from "@/lib/constants";
 
 // ---------------------
 // Shared auto-send threshold (used by other tabs)

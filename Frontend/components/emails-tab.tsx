@@ -6,6 +6,7 @@ import ManualReviewTable from "@/components/manual-review-table";
 import AutoSentTable from "@/components/auto-sent-table";
 import { SAMPLE_EMAILS } from "@/components/sample-emails";
 import { CheckSquare, Square, Trash2, Send, Save, X, RotateCcw, Clock, AlertTriangle, RefreshCw, Mail, CheckCircle } from "lucide-react";
+import { ADVISORS, BACKEND_URL } from "@/lib/constants";
 
 // Filter types
 type FilterType = 
@@ -30,6 +31,7 @@ export type Email = {
   suggested_reply: string;
   received_at: string; // ISO timestamp from backend
   approved_at?: string | null; // ISO timestamp when approved/sent
+  assigned_to?: string | null;
 };
 
 type Metrics = {
@@ -46,12 +48,8 @@ type SyncResult = {
   last_synced_at: string | null;
 };
 
-const BACKEND_URL = "http://127.0.0.1:8000";
 const DRAFTS_STORAGE_KEY = "emailDrafts";
-const ASSIGNED_STORAGE_KEY = "emailAssignedPersons";
 const AUTO_SYNC_INTERVAL = 60000; // 60 seconds
-
-const ADVISORS = ["Winsor", "Kelly", "Sabrina", "Samantha", "Christine", "Jean"];
 
 // ============================================
 // Date parsing helper - must be defined first
@@ -266,28 +264,18 @@ export default function EmailsTab() {
     window.localStorage.setItem(DRAFTS_STORAGE_KEY, JSON.stringify(savedDrafts));
   }, [savedDrafts]);
 
-  // --- Load assigned persons from localStorage ---
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    const stored = window.localStorage.getItem(ASSIGNED_STORAGE_KEY);
-    if (stored) {
-      try {
-        setAssignedPersons(JSON.parse(stored));
-      } catch {
-        // ignore parse errors
-      }
-    }
-  }, []);
-
-  // --- Save assigned persons to localStorage whenever they change ---
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    window.localStorage.setItem(ASSIGNED_STORAGE_KEY, JSON.stringify(assignedPersons));
-  }, [assignedPersons]);
-
-  // --- Assign a person to an email ---
-  function handleAssignPerson(emailId: number, person: string) {
+  // --- Assign a person to an email (persisted to backend) ---
+  async function handleAssignPerson(emailId: number, person: string) {
     setAssignedPersons((prev) => ({ ...prev, [emailId]: person }));
+    try {
+      await fetch(`${BACKEND_URL}/emails/${emailId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ assigned_to: person || null }),
+      });
+    } catch (err) {
+      console.error("Failed to save advisor assignment:", err);
+    }
   }
 
   // --- Toggle an advisor filter pill on/off (single-select) ---
@@ -325,6 +313,13 @@ export default function EmailsTab() {
 
       const allEmails: Email[] = await res.json();
       setEmails(allEmails);
+
+      // Seed assignedPersons from backend data
+      const fromBackend: Record<number, string> = {};
+      for (const e of allEmails) {
+        if (e.assigned_to) fromBackend[e.id] = e.assigned_to;
+      }
+      setAssignedPersons(fromBackend);
     } catch (err) {
       console.error(err);
       setError("Could not load emails from backend");

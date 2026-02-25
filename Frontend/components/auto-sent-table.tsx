@@ -3,8 +3,7 @@
 import { Email } from "./emails-tab";
 import { CheckSquare, Square, CheckCircle, Clock, Send } from "lucide-react";
 import DraftBadge from "./draft-badge";
-
-const ADVISORS = ["Winsor", "Kelly", "Sabrina", "Samantha", "Christine", "Jean"];
+import { ADVISORS } from "@/lib/constants";
 
 type AutoSentTableProps = {
   emails?: Email[];

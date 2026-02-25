@@ -4,8 +4,7 @@ import { useState } from "react";
 import { Email } from "./emails-tab";
 import { CheckSquare, Square, Clock, Send } from "lucide-react";
 import DraftBadge from "./draft-badge";
-
-const ADVISORS = ["Winsor", "Kelly", "Sabrina", "Samantha", "Christine", "Jean"];
+import { ADVISORS } from "@/lib/constants";
 
 type SortField = "student" | "uni" | "subject" | "assigned" | "confidence" | "waiting" | "received";
 type SortOrder = "asc" | "desc" | null;
