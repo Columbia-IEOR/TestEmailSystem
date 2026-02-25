@@ -1,13 +1,8 @@
 "use client";
 
-import { useState } from "react";
 import { Email } from "./emails-tab";
 import { CheckSquare, Square, Clock, Send } from "lucide-react";
 import DraftBadge from "./draft-badge";
-import { ADVISORS } from "@/lib/constants";
-
-type SortField = "student" | "uni" | "subject" | "assigned" | "confidence" | "waiting" | "received";
-type SortOrder = "asc" | "desc" | null;
 
 type ManualReviewTableProps = {
   emails?: Email[];
@@ -18,13 +13,12 @@ type ManualReviewTableProps = {
   selectedIds?: Set<number>;
   onToggleSelect?: (id: number) => void;
   savedDrafts?: Record<number, string>;
-  assignedPersons?: Record<number, string>;
-  onAssignPerson?: (emailId: number, person: string) => void;
 };
 
 function formatReceivedEastern(received_at: string) {
   if (!received_at) return "—";
 
+  // If the string has no timezone info, assume it's UTC and append "Z"
   const iso =
     received_at.endsWith("Z") || received_at.includes("+")
       ? received_at
@@ -79,6 +73,7 @@ function getWaitingTime(received_at: string): WaitingTimeInfo {
     label = hours > 0 ? `${diffDays}d ${hours}h` : `${diffDays}d`;
   }
 
+  // Determine severity level (shared with other tabs)
   let severity: WaitingTimeInfo["severity"];
   if (diffHours <= 12) {
     severity = "green";
@@ -91,13 +86,6 @@ function getWaitingTime(received_at: string): WaitingTimeInfo {
   return { label, minutes: diffMinutes, severity };
 }
 
-function SortIcon({ field, sortField, sortOrder }: { field: SortField; sortField: SortField | null; sortOrder: SortOrder }) {
-  if (sortField !== field) return <span className="ml-1 text-gray-400 text-xs">↕</span>;
-  if (sortOrder === "asc") return <span className="ml-1 text-blue-600 text-xs">↑</span>;
-  if (sortOrder === "desc") return <span className="ml-1 text-blue-600 text-xs">↓</span>;
-  return <span className="ml-1 text-gray-400 text-xs">↕</span>;
-}
-
 export default function ManualReviewTable({
   emails = [],
   onApprove,
@@ -106,72 +94,7 @@ export default function ManualReviewTable({
   selectedIds = new Set(),
   onToggleSelect,
   savedDrafts = {},
-  assignedPersons = {},
-  onAssignPerson,
 }: ManualReviewTableProps) {
-  const [sortField, setSortField] = useState<SortField | null>(null);
-  const [sortOrder, setSortOrder] = useState<SortOrder>(null);
-
-  function handleSort(field: SortField) {
-    if (sortField === field) {
-      if (sortOrder === "asc") {
-        setSortOrder("desc");
-      } else if (sortOrder === "desc") {
-        setSortField(null);
-        setSortOrder(null);
-      } else {
-        setSortOrder("asc");
-      }
-    } else {
-      setSortField(field);
-      setSortOrder("asc");
-    }
-  }
-
-  const sortedEmails = [...emails].sort((a, b) => {
-    if (!sortField || !sortOrder) return 0;
-
-    let valA: string | number;
-    let valB: string | number;
-
-    switch (sortField) {
-      case "student":
-        valA = (a.student_name ?? "").toLowerCase();
-        valB = (b.student_name ?? "").toLowerCase();
-        break;
-      case "uni":
-        valA = (a.uni ?? "").toLowerCase();
-        valB = (b.uni ?? "").toLowerCase();
-        break;
-      case "subject":
-        valA = a.subject.toLowerCase();
-        valB = b.subject.toLowerCase();
-        break;
-      case "assigned":
-        valA = (assignedPersons[a.id] ?? "").toLowerCase();
-        valB = (assignedPersons[b.id] ?? "").toLowerCase();
-        break;
-      case "confidence":
-        valA = a.confidence;
-        valB = b.confidence;
-        break;
-      case "waiting":
-        valA = getWaitingTime(a.received_at).minutes;
-        valB = getWaitingTime(b.received_at).minutes;
-        break;
-      case "received":
-        valA = new Date(a.received_at.endsWith("Z") || a.received_at.includes("+") ? a.received_at : a.received_at + "Z").getTime();
-        valB = new Date(b.received_at.endsWith("Z") || b.received_at.includes("+") ? b.received_at : b.received_at + "Z").getTime();
-        break;
-      default:
-        return 0;
-    }
-
-    if (valA < valB) return sortOrder === "asc" ? -1 : 1;
-    if (valA > valB) return sortOrder === "asc" ? 1 : -1;
-    return 0;
-  });
-
   if (emails.length === 0) {
     return (
       <div className="text-sm text-muted-foreground">
@@ -179,8 +102,6 @@ export default function ManualReviewTable({
       </div>
     );
   }
-
-  const thClass = "px-4 py-2 text-left cursor-pointer select-none hover:bg-muted/70 whitespace-nowrap";
 
   return (
     <div className="overflow-x-auto rounded-lg border border-border">
@@ -192,36 +113,20 @@ export default function ManualReviewTable({
                 <span className="sr-only">Select</span>
               </th>
             )}
-            <th className={thClass} onClick={() => handleSort("student")}>
-              Student <SortIcon field="student" sortField={sortField} sortOrder={sortOrder} />
-            </th>
-            <th className={`${thClass} w-[80px]`} onClick={() => handleSort("uni")}>
-              UNI <SortIcon field="uni" sortField={sortField} sortOrder={sortOrder} />
-            </th>
-            <th className={thClass} onClick={() => handleSort("subject")}>
-              Subject <SortIcon field="subject" sortField={sortField} sortOrder={sortOrder} />
-            </th>
-            <th className={thClass} onClick={() => handleSort("assigned")}>
-              Assigned <SortIcon field="assigned" sortField={sortField} sortOrder={sortOrder} />
-            </th>
-            <th className={thClass} onClick={() => handleSort("confidence")}>
-              Confidence <SortIcon field="confidence" sortField={sortField} sortOrder={sortOrder} />
-            </th>
-            <th className={thClass} onClick={() => handleSort("waiting")}>
-              Waiting <SortIcon field="waiting" sortField={sortField} sortOrder={sortOrder} />
-            </th>
-            <th className={thClass} onClick={() => handleSort("received")}>
-              Received <SortIcon field="received" sortField={sortField} sortOrder={sortOrder} />
-            </th>
+            <th className="px-4 py-2 text-left">Student</th>
+            <th className="px-4 py-2 text-left w-[80px]">UNI</th>
+            <th className="px-4 py-2 text-left">Subject</th>
+            <th className="px-4 py-2 text-left">Confidence</th>
+            <th className="px-4 py-2 text-left">Waiting</th>
+            <th className="px-4 py-2 text-left">Received</th>
             <th className="px-4 py-2 text-left w-[240px]">Actions</th>
           </tr>
         </thead>
         <tbody>
-          {sortedEmails.map((email) => {
+          {emails.map((email) => {
             const isSelected = selectedIds.has(email.id);
             const hasDraft = !!savedDrafts[email.id];
             const waitingTime = getWaitingTime(email.received_at);
-            const assigned = assignedPersons[email.id] ?? "";
 
             return (
               <tr
@@ -252,6 +157,7 @@ export default function ManualReviewTable({
                   </div>
                 </td>
 
+                {/* UNI — now same size & color as Student */}
                 <td className="px-4 py-2 w-[80px] whitespace-nowrap">
                   {email.uni ?? "—"}
                 </td>
@@ -261,23 +167,6 @@ export default function ManualReviewTable({
                     {email.subject}
                   </span>
                 </td>
-
-                {/* Assigned column */}
-                <td className="px-4 py-2 w-[140px]">
-                  <select
-                    value={assigned}
-                    onChange={(e) => onAssignPerson?.(email.id, e.target.value)}
-                    className="w-full text-xs rounded border border-border bg-background px-2 py-1 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                  >
-                    <option value="">— Unassigned —</option>
-                    {ADVISORS.map((name) => (
-                      <option key={name} value={name}>
-                        {name}
-                      </option>
-                    ))}
-                  </select>
-                </td>
-
                 <td className="px-4 py-2">
                   <span
                     className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${
@@ -294,6 +183,7 @@ export default function ManualReviewTable({
                   </span>
                 </td>
 
+                {/* Waiting Time Column */}
                 <td className="px-4 py-2">
                   <div
                     className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium ${
@@ -312,7 +202,6 @@ export default function ManualReviewTable({
                 <td className="px-4 py-2">
                   {formatReceivedEastern(email.received_at)}
                 </td>
-
                 <td className="px-4 py-2 space-x-2 w-[240px] whitespace-nowrap">
                   <button
                     onClick={() => onSelect(email)}
