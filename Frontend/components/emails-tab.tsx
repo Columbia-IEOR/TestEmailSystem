@@ -48,6 +48,7 @@ type SyncResult = {
 
 const BACKEND_URL = "http://127.0.0.1:8000";
 const DRAFTS_STORAGE_KEY = "emailDrafts";
+const ASSIGNED_STORAGE_KEY = "emailAssignedPersons";
 const AUTO_SYNC_INTERVAL = 60000; // 60 seconds
 
 // ============================================
@@ -221,6 +222,9 @@ export default function EmailsTab() {
   // Saved drafts (localStorage)
   const [savedDrafts, setSavedDrafts] = useState<Record<number, string>>({});
 
+  // Assigned persons (localStorage)
+  const [assignedPersons, setAssignedPersons] = useState<Record<number, string>>({});
+
   // Updated filters
   const filters: { id: FilterType; label: string; description: string }[] = [
     { id: "all", label: "All", description: "Show all emails" },
@@ -256,6 +260,30 @@ export default function EmailsTab() {
     if (typeof window === "undefined") return;
     window.localStorage.setItem(DRAFTS_STORAGE_KEY, JSON.stringify(savedDrafts));
   }, [savedDrafts]);
+
+  // --- Load assigned persons from localStorage ---
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const stored = window.localStorage.getItem(ASSIGNED_STORAGE_KEY);
+    if (stored) {
+      try {
+        setAssignedPersons(JSON.parse(stored));
+      } catch {
+        // ignore parse errors
+      }
+    }
+  }, []);
+
+  // --- Save assigned persons to localStorage whenever they change ---
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    window.localStorage.setItem(ASSIGNED_STORAGE_KEY, JSON.stringify(assignedPersons));
+  }, [assignedPersons]);
+
+  // --- Assign a person to an email ---
+  function handleAssignPerson(emailId: number, person: string) {
+    setAssignedPersons((prev) => ({ ...prev, [emailId]: person }));
+  }
 
   // --- Fetch Gmail status ---
   async function fetchGmailStatus() {
@@ -1023,6 +1051,8 @@ export default function EmailsTab() {
               selectedIds={selectedIds}
               onToggleSelect={toggleSelect}
               savedDrafts={savedDrafts}
+              assignedPersons={assignedPersons}
+              onAssignPerson={handleAssignPerson}
             />
           </div>
         )}
@@ -1066,6 +1096,8 @@ export default function EmailsTab() {
               sending={sending}
               savedDrafts={savedDrafts}
               mode="pending"
+              assignedPersons={assignedPersons}
+              onAssignPerson={handleAssignPerson}
             />
           </div>
         )}
@@ -1100,6 +1132,8 @@ export default function EmailsTab() {
               selectedIds={selectedIds}
               onToggleSelect={toggleSelect}
               savedDrafts={savedDrafts}
+              assignedPersons={assignedPersons}
+              onAssignPerson={handleAssignPerson}
             />
           </div>
         )}
@@ -1140,6 +1174,8 @@ export default function EmailsTab() {
               onToggleSelect={toggleSelect}
               savedDrafts={savedDrafts}
               mode="sent"
+              assignedPersons={assignedPersons}
+              onAssignPerson={handleAssignPerson}
             />
           </div>
         )}
