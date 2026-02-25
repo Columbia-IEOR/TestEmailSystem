@@ -39,7 +39,6 @@ from sqlalchemy import (
     Enum as SAEnum,
     func,
     Boolean,
-    text,
 )
 from sqlalchemy.orm import declarative_base, sessionmaker, Session
 
@@ -550,17 +549,15 @@ class Email(BaseModel):
     suggested_reply: str
     received_at: datetime
     approved_at: Optional[datetime] = None
-    assigned_to: Optional[str] = None
 
 
 class EmailUpdate(BaseModel):
     """
     Fields that can be updated by the advisor (or system).
-    Supports changing status, editing the suggested_reply, and assigning an advisor.
+    Supports changing status and editing the suggested_reply text.
     """
     status: Optional[EmailStatus] = None
     suggested_reply: Optional[str] = None
-    assigned_to: Optional[str] = None
 
 
 class EmailSettings(BaseModel):
@@ -634,23 +631,10 @@ class EmailORM(Base):
     suggested_reply = Column(Text, nullable=False)
     received_at = Column(DateTime, nullable=False, index=True)
     approved_at = Column(DateTime, nullable=True)  # when advisor approved/sent
-    assigned_to = Column(String, nullable=True)  # advisor assigned to this email
 
 
 # Create tables if they don't exist yet
 Base.metadata.create_all(bind=engine)
-
-
-def _migrate_db():
-    """Add columns introduced after initial schema creation."""
-    with engine.connect() as conn:
-        existing = {row[1] for row in conn.execute(text("PRAGMA table_info(emails)"))}
-        if "assigned_to" not in existing:
-            conn.execute(text("ALTER TABLE emails ADD COLUMN assigned_to VARCHAR"))
-            conn.commit()
-
-
-_migrate_db()
 
 # =====================================================
 # Gmail OAuth helpers
@@ -818,7 +802,6 @@ def orm_to_schema(email_obj: EmailORM) -> Email:
         suggested_reply=email_obj.suggested_reply,
         received_at=email_obj.received_at,
         approved_at=email_obj.approved_at,
-        assigned_to=email_obj.assigned_to,
     )
 
 
