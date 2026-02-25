@@ -13,8 +13,7 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { Clock, AlertTriangle, Send } from "lucide-react";
-
-const BACKEND_URL = "http://127.0.0.1:8000";
+import { BACKEND_URL } from "@/lib/constants";
 
 // must match SettingsTab
 const CONFIDENCE_THRESHOLD_KEY = "confidenceThresholdPct";

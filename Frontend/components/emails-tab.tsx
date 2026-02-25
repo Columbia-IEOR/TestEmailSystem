@@ -6,6 +6,7 @@ import ManualReviewTable from "@/components/manual-review-table";
 import AutoSentTable from "@/components/auto-sent-table";
 import { SAMPLE_EMAILS } from "@/components/sample-emails";
 import { CheckSquare, Square, Trash2, Send, Save, X, RotateCcw, Clock, AlertTriangle, RefreshCw, Mail, CheckCircle } from "lucide-react";
+import { ADVISORS, BACKEND_URL } from "@/lib/constants";
 
 // Filter types
 type FilterType = 
@@ -30,6 +31,7 @@ export type Email = {
   suggested_reply: string;
   received_at: string; // ISO timestamp from backend
   approved_at?: string | null; // ISO timestamp when approved/sent
+  assigned_to?: string | null;
 };
 
 type Metrics = {
@@ -46,7 +48,6 @@ type SyncResult = {
   last_synced_at: string | null;
 };
 
-const BACKEND_URL = "http://127.0.0.1:8000";
 const DRAFTS_STORAGE_KEY = "emailDrafts";
 const AUTO_SYNC_INTERVAL = 60000; // 60 seconds
 
@@ -221,6 +222,12 @@ export default function EmailsTab() {
   // Saved drafts (localStorage)
   const [savedDrafts, setSavedDrafts] = useState<Record<number, string>>({});
 
+  // Assigned persons (localStorage)
+  const [assignedPersons, setAssignedPersons] = useState<Record<number, string>>({});
+
+  // Advisor toggle filter (single-select; null = show all)
+  const [advisorFilter, setAdvisorFilter] = useState<string | null>(null);
+
   // Updated filters
   const filters: { id: FilterType; label: string; description: string }[] = [
     { id: "all", label: "All", description: "Show all emails" },
@@ -257,6 +264,25 @@ export default function EmailsTab() {
     window.localStorage.setItem(DRAFTS_STORAGE_KEY, JSON.stringify(savedDrafts));
   }, [savedDrafts]);
 
+  // --- Assign a person to an email (persisted to backend) ---
+  async function handleAssignPerson(emailId: number, person: string) {
+    setAssignedPersons((prev) => ({ ...prev, [emailId]: person }));
+    try {
+      await fetch(`${BACKEND_URL}/emails/${emailId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ assigned_to: person || null }),
+      });
+    } catch (err) {
+      console.error("Failed to save advisor assignment:", err);
+    }
+  }
+
+  // --- Toggle an advisor filter pill on/off (single-select) ---
+  function toggleAdvisorFilter(key: string) {
+    setAdvisorFilter((prev) => (prev === key ? null : key));
+  }
+
   // --- Fetch Gmail status ---
   async function fetchGmailStatus() {
     try {
@@ -287,6 +313,13 @@ export default function EmailsTab() {
 
       const allEmails: Email[] = await res.json();
       setEmails(allEmails);
+
+      // Seed assignedPersons from backend data
+      const fromBackend: Record<number, string> = {};
+      for (const e of allEmails) {
+        if (e.assigned_to) fromBackend[e.id] = e.assigned_to;
+      }
+      setAssignedPersons(fromBackend);
     } catch (err) {
       console.error(err);
       setError("Could not load emails from backend");
@@ -704,6 +737,14 @@ export default function EmailsTab() {
       });
     }
 
+    // Advisor filter: show only emails assigned to the selected advisor
+    if (advisorFilter !== null) {
+      filtered = filtered.filter((e) => {
+        const assigned = assignedPersons[e.id] ?? "";
+        return assigned === advisorFilter;
+      });
+    }
+
     return filtered;
   }
 
@@ -736,6 +777,37 @@ export default function EmailsTab() {
       : filteredSentEmails;
 
   const allVisibleSelected = currentEmails.length > 0 && currentEmails.every((e) => selectedIds.has(e.id));
+
+  // Advisor filter pill row — rendered below each section's search bar
+  const advisorFilterRow = (
+    <div className="flex items-center gap-2 flex-wrap">
+      <span className="text-xs text-muted-foreground font-medium shrink-0">Advisor:</span>
+      {[{ label: "Unassigned", key: "" }, ...ADVISORS.map((a) => ({ label: a, key: a }))].map(({ label, key }) => {
+        const active = advisorFilter === key;
+        return (
+          <button
+            key={key === "" ? "__unassigned__" : key}
+            onClick={() => toggleAdvisorFilter(key)}
+            className={`px-2.5 py-0.5 rounded-full text-xs font-medium transition-colors ${
+              active
+                ? "bg-blue-600 text-white"
+                : "bg-muted text-muted-foreground hover:bg-muted/80"
+            }`}
+          >
+            {label}
+          </button>
+        );
+      })}
+      {advisorFilter !== null && (
+        <button
+          onClick={() => setAdvisorFilter(null)}
+          className="text-xs text-muted-foreground hover:text-foreground underline ml-1"
+        >
+          Clear
+        </button>
+      )}
+    </div>
+  );
 
   // Check if current email has unsaved changes
   const hasUnsavedChanges =
@@ -1013,6 +1085,7 @@ export default function EmailsTab() {
                 </button>
               )}
             </div>
+            {advisorFilterRow}
 
             <ManualReviewTable
               emails={filteredReviewEmails}
@@ -1023,6 +1096,8 @@ export default function EmailsTab() {
               selectedIds={selectedIds}
               onToggleSelect={toggleSelect}
               savedDrafts={savedDrafts}
+              assignedPersons={assignedPersons}
+              onAssignPerson={handleAssignPerson}
             />
           </div>
         )}
@@ -1053,6 +1128,7 @@ export default function EmailsTab() {
                 </button>
               )}
             </div>
+            {advisorFilterRow}
 
             <AutoSentTable
               emails={filteredPendingEmails}
@@ -1066,6 +1142,8 @@ export default function EmailsTab() {
               sending={sending}
               savedDrafts={savedDrafts}
               mode="pending"
+              assignedPersons={assignedPersons}
+              onAssignPerson={handleAssignPerson}
             />
           </div>
         )}
@@ -1091,6 +1169,7 @@ export default function EmailsTab() {
                 className="max-w-sm"
               />
             </div>
+            {advisorFilterRow}
             <ManualReviewTable
               emails={filteredPersonalEmails}
               searchTerm={searchTerm}
@@ -1100,6 +1179,8 @@ export default function EmailsTab() {
               selectedIds={selectedIds}
               onToggleSelect={toggleSelect}
               savedDrafts={savedDrafts}
+              assignedPersons={assignedPersons}
+              onAssignPerson={handleAssignPerson}
             />
           </div>
         )}
@@ -1130,6 +1211,7 @@ export default function EmailsTab() {
                 </button>
               )}
             </div>
+            {advisorFilterRow}
 
             <AutoSentTable
               emails={filteredSentEmails}
@@ -1140,6 +1222,8 @@ export default function EmailsTab() {
               onToggleSelect={toggleSelect}
               savedDrafts={savedDrafts}
               mode="sent"
+              assignedPersons={assignedPersons}
+              onAssignPerson={handleAssignPerson}
             />
           </div>
         )}

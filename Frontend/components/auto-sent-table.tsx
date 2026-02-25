@@ -3,6 +3,7 @@
 import { Email } from "./emails-tab";
 import { CheckSquare, Square, CheckCircle, Clock, Send } from "lucide-react";
 import DraftBadge from "./draft-badge";
+import { ADVISORS } from "@/lib/constants";
 
 type AutoSentTableProps = {
   emails?: Email[];
@@ -16,6 +17,8 @@ type AutoSentTableProps = {
   sending?: boolean;
   savedDrafts?: Record<number, string>;
   mode?: "pending" | "sent";
+  assignedPersons?: Record<number, string>;
+  onAssignPerson?: (emailId: number, person: string) => void;
 };
 
 function formatEastern(timestamp?: string | null) {
@@ -145,6 +148,8 @@ export default function AutoSentTable({
   sending = false,
   savedDrafts = {},
   mode = "pending",
+  assignedPersons = {},
+  onAssignPerson,
 }: AutoSentTableProps) {
   if (emails.length === 0) {
     return (
@@ -167,6 +172,7 @@ export default function AutoSentTable({
             <th className="px-4 py-2 text-left">Student</th>
             <th className="px-4 py-2 text-left w-[80px]">UNI</th>
             <th className="px-4 py-2 text-left">Subject</th>
+            <th className="px-4 py-2 text-left">Assigned</th>
             <th className="px-4 py-2 text-left">Confidence</th>
             <th className="px-4 py-2 text-left">
               {mode === "sent" ? "Waited" : "Waiting"}
@@ -225,6 +231,21 @@ export default function AutoSentTable({
                     {email.subject}
                   </span>
                 </td>
+
+                {/* Assigned column */}
+                <td className="px-4 py-2 w-[140px]">
+                  <select
+                    value={assignedPersons[email.id] ?? ""}
+                    onChange={(e) => onAssignPerson?.(email.id, e.target.value)}
+                    className="w-full text-xs rounded border border-border bg-background px-2 py-1 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  >
+                    <option value="">— Unassigned —</option>
+                    {ADVISORS.map((name) => (
+                      <option key={name} value={name}>{name}</option>
+                    ))}
+                  </select>
+                </td>
+
                 <td className="px-4 py-2">
                   <span
                     className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${
