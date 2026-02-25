@@ -51,6 +51,8 @@ const DRAFTS_STORAGE_KEY = "emailDrafts";
 const ASSIGNED_STORAGE_KEY = "emailAssignedPersons";
 const AUTO_SYNC_INTERVAL = 60000; // 60 seconds
 
+const ADVISORS = ["Winsor", "Kelly", "Sabrina", "Samantha", "Christine", "Jean"];
+
 // ============================================
 // Date parsing helper - must be defined first
 // ============================================
@@ -225,6 +227,9 @@ export default function EmailsTab() {
   // Assigned persons (localStorage)
   const [assignedPersons, setAssignedPersons] = useState<Record<number, string>>({});
 
+  // Advisor toggle filter (single-select; null = show all)
+  const [advisorFilter, setAdvisorFilter] = useState<string | null>(null);
+
   // Updated filters
   const filters: { id: FilterType; label: string; description: string }[] = [
     { id: "all", label: "All", description: "Show all emails" },
@@ -283,6 +288,11 @@ export default function EmailsTab() {
   // --- Assign a person to an email ---
   function handleAssignPerson(emailId: number, person: string) {
     setAssignedPersons((prev) => ({ ...prev, [emailId]: person }));
+  }
+
+  // --- Toggle an advisor filter pill on/off (single-select) ---
+  function toggleAdvisorFilter(key: string) {
+    setAdvisorFilter((prev) => (prev === key ? null : key));
   }
 
   // --- Fetch Gmail status ---
@@ -732,6 +742,14 @@ export default function EmailsTab() {
       });
     }
 
+    // Advisor filter: show only emails assigned to the selected advisor
+    if (advisorFilter !== null) {
+      filtered = filtered.filter((e) => {
+        const assigned = assignedPersons[e.id] ?? "";
+        return assigned === advisorFilter;
+      });
+    }
+
     return filtered;
   }
 
@@ -764,6 +782,37 @@ export default function EmailsTab() {
       : filteredSentEmails;
 
   const allVisibleSelected = currentEmails.length > 0 && currentEmails.every((e) => selectedIds.has(e.id));
+
+  // Advisor filter pill row — rendered below each section's search bar
+  const advisorFilterRow = (
+    <div className="flex items-center gap-2 flex-wrap">
+      <span className="text-xs text-muted-foreground font-medium shrink-0">Advisor:</span>
+      {[{ label: "Unassigned", key: "" }, ...ADVISORS.map((a) => ({ label: a, key: a }))].map(({ label, key }) => {
+        const active = advisorFilter === key;
+        return (
+          <button
+            key={key === "" ? "__unassigned__" : key}
+            onClick={() => toggleAdvisorFilter(key)}
+            className={`px-2.5 py-0.5 rounded-full text-xs font-medium transition-colors ${
+              active
+                ? "bg-blue-600 text-white"
+                : "bg-muted text-muted-foreground hover:bg-muted/80"
+            }`}
+          >
+            {label}
+          </button>
+        );
+      })}
+      {advisorFilter !== null && (
+        <button
+          onClick={() => setAdvisorFilter(null)}
+          className="text-xs text-muted-foreground hover:text-foreground underline ml-1"
+        >
+          Clear
+        </button>
+      )}
+    </div>
+  );
 
   // Check if current email has unsaved changes
   const hasUnsavedChanges =
@@ -1041,6 +1090,7 @@ export default function EmailsTab() {
                 </button>
               )}
             </div>
+            {advisorFilterRow}
 
             <ManualReviewTable
               emails={filteredReviewEmails}
@@ -1083,6 +1133,7 @@ export default function EmailsTab() {
                 </button>
               )}
             </div>
+            {advisorFilterRow}
 
             <AutoSentTable
               emails={filteredPendingEmails}
@@ -1123,6 +1174,7 @@ export default function EmailsTab() {
                 className="max-w-sm"
               />
             </div>
+            {advisorFilterRow}
             <ManualReviewTable
               emails={filteredPersonalEmails}
               searchTerm={searchTerm}
@@ -1164,6 +1216,7 @@ export default function EmailsTab() {
                 </button>
               )}
             </div>
+            {advisorFilterRow}
 
             <AutoSentTable
               emails={filteredSentEmails}
